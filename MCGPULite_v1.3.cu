@@ -1,3 +1,8 @@
+//    --------------------------------------------------------
+//    This is MCGPULite_v1.3, a modified version of the original MC-GPU v1.3.
+//    Source: https://github.com/z0gSh1u/MCGPULite
+//    It simplifies many procedures of the usage of MCGPU. Some behaviors are different.
+//    --------------------------------------------------------
 
 //    --> MC-GPU v1.3 was originally released in Google Code in 2012.
 //        This page contains the original 2012 code, with only a bug in the function "report_voxels_dose" corrected.
@@ -359,7 +364,7 @@
 
 
 // *** Include header file with the structures and functions declarations
-#include <MC-GPU_v1.3.h>
+#include <MCGPULite_v1.3.h>
 
 // *** Include the computing kernel:
 #include <MC-GPU_kernel_v1.3.cu>
@@ -412,7 +417,11 @@ int main(int argc, char **argv)
 
   MASTER_THREAD 
   { 
-      printf("\n\n     *****************************************************************************\n");
+      printf(  "\n\033[46;30m     *****************************************************************************\033[0m\n");
+      printf(    "\033[46;30m     ***     MCGPULite, version 1.3 (https://github.com/z0gSh1u/MCGPULite)     ***\033[0m\n");
+      printf(    "\033[46;30m     *****************************************************************************\033[0m\n");
+
+      printf(  "\n     *****************************************************************************\n");
       printf(    "     ***         MC-GPU, version 1.3 (http://code.google.com/p/mcgpu/)         ***\n");
       printf(    "     ***                                                                       ***\n");
       printf(    "     ***  A. Badal and A. Badano, \"Accelerating Monte Carlo simulations of     *** \n");
@@ -429,7 +438,7 @@ int main(int argc, char **argv)
   
 #ifdef USING_CUDA
   // The "MASTER_THREAD" macro prints the messages just once when using MPI threads (it has no effect if MPI is not used):  MASTER_THREAD == "if(0==myID)"
-  MASTER_THREAD printf  ("\n             *** CUDA SIMULATION IN THE GPU ***\n");
+  MASTER_THREAD printf  ("             *** CUDA SIMULATION IN THE GPU ***\n");
 #else
   MASTER_THREAD printf  ("\n             *** SIMULATION IN THE CPU ***\n");
 #endif
@@ -528,13 +537,14 @@ int main(int argc, char **argv)
         printf("                      Input voxel file = %s\n", file_name_voxels);
         printf("                     Output image file = %s\n", file_name_output);
 
-        if (dose_ROI_x_max>-1)
-        {
-          printf("                      Output dose file = %s\n", file_dose_output);
-          printf("         Input region of interest dose = X[%d,%d], Y[%d,%d], Z[%d,%d]\n", dose_ROI_x_min+1, dose_ROI_x_max+1, dose_ROI_y_min+1, dose_ROI_y_max+1, dose_ROI_z_min+1, dose_ROI_z_max+1);   // Show ROI with index=1 for the first voxel instead of 0.
-        }
+        // [MCGPULite] Dose feature is disabled.
+        // if (dose_ROI_x_max>-1)
+        // {
+        //   printf("                      Output dose file = %s\n", file_dose_output);
+        //   printf("         Input region of interest dose = X[%d,%d], Y[%d,%d], Z[%d,%d]\n", dose_ROI_x_min+1, dose_ROI_x_max+1, dose_ROI_y_min+1, dose_ROI_y_max+1, dose_ROI_z_min+1, dose_ROI_z_max+1);   // Show ROI with index=1 for the first voxel instead of 0.
+        // }
         
-        printf("\n                  Energy spectrum file = %s\n", file_name_espc);      
+        printf(  "                  Energy spectrum file = %s\n", file_name_espc);      
         printf(  "            number of energy bins read = %d\n", source_energy_data.num_bins_espc);
         printf(  "             minimum, maximum energies = %.3f, %.3f keV\n", 0.001f*source_energy_data.espc[0], 0.001f*source_energy_data.espc[source_energy_data.num_bins_espc]);
         printf(  "                  mean energy spectrum = %.3f keV\n\n", 0.001f*mean_energy_spectrum);
@@ -566,7 +576,7 @@ int main(int argc, char **argv)
   {
     MASTER_THREAD 
     {
-      printf("\n\n\n !!ERROR!! The input x-ray source energy spectrum minimum (%.3f eV) and maximum (%.3f eV) energy values\n", source_energy_data.espc[0], source_energy_data.espc[source_energy_data.num_bins_espc]);
+      printf("\n\n\n \033[31m!!!!ERROR!!\033[0m The input x-ray source energy spectrum minimum (%.3f eV) and maximum (%.3f eV) energy values\n", source_energy_data.espc[0], source_energy_data.espc[source_energy_data.num_bins_espc]);
       printf(  "           are outside the tabulated energy interval for the material properties tables (from %.3f to %.3f eV)!!\n", mfp_table_data.e0, (mfp_table_data.e0+(mfp_table_data.num_values-1)/mfp_table_data.ide));
       printf(  "           Please, modify the input energy spectra to fit the tabulated limits or create new tables.\n\n");
     }
@@ -642,7 +652,7 @@ int main(int argc, char **argv)
   MASTER_THREAD
   {
     current_time=time(NULL);
-    printf("\n\n    -- MONTE CARLO LOOP phase. Time: %s\n\n", ctime(&current_time)); 
+    printf("\n    -- MONTE CARLO LOOP phase. Time: %s\n", ctime(&current_time)); 
     fflush(stdout);    
   }
 
@@ -677,7 +687,7 @@ int main(int argc, char **argv)
     }
       
     if (num_projections!=1)
-      MASTER_THREAD printf("\n\n\n   << Simulating Projection %d of %d >> Angle: %lf degrees.\n\n\n", num_p+1, num_projections, current_angle*RAD2DEG);          
+      MASTER_THREAD printf("\n\033[35m   << Simulating Projection %d of %d >> Angle: %lf degrees.\033[0m\n", num_p+1, num_projections, current_angle*RAD2DEG);          
 
     
     clock_start = clock();   // Start the CPU clock
@@ -748,13 +758,15 @@ int main(int argc, char **argv)
       
         return_reduce = MPI_Allreduce(&histories_speed_test, &total_histories_speed_test, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);  
         if (MPI_SUCCESS != return_reduce)
-          printf("\n\n !!ERROR!! Error reducing (MPI_Allreduce) the total number of histories in the speed test test??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
+          printf("\n\n \033[31m!!!!ERROR!!\033[0m Error reducing (MPI_Allreduce) the total number of histories in the speed test test??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
         else
       #else
         total_histories_speed_test = histories_speed_test;
       #endif
             
-      cudaThreadSynchronize();    // Force the runtime to wait until GPU kernel has completed
+      // [MCGPULite] warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated
+      cudaDeviceSynchronize();
+      // cudaThreadSynchronize();    // Force the runtime to wait until GPU kernel has completed
       getLastCudaError("\n\n !!Kernel execution failed while simulating particle tracks!! ");   // Check if the CUDA function returned any error
 
       float speed_test_time = float(clock()-clock_kernel)/CLOCKS_PER_SEC;
@@ -788,7 +800,7 @@ int main(int argc, char **argv)
           return_reduce = MPI_Allreduce(&node_speed, &total_speed, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);  // Sum all the times and send result to all processes
           
           if (MPI_SUCCESS != return_reduce)
-            printf("\n\n !!ERROR!! Error reducing (MPI_Allreduce) the speed test results??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
+            printf("\n\n \033[31m!!!!ERROR!!\033[0m Error reducing (MPI_Allreduce) the speed test results??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
           else
             MASTER_THREAD 
             {
@@ -880,7 +892,7 @@ int main(int argc, char **argv)
         MASTER_THREAD 
         {
           if (MPI_SUCCESS != return_reduce)
-            printf("\n\n !!ERROR!! Error getting the total number of particles simulated in all the GPUs (MPI_Reduce). return_reduce = %d.\n\n\n", return_reduce);
+            printf("\n\n \033[31m!!!!ERROR!!\033[0m Error getting the total number of particles simulated in all the GPUs (MPI_Reduce). return_reduce = %d.\n\n\n", return_reduce);
           
           if (1==simulating_by_time || 1==doing_speed_test)
           {
@@ -890,8 +902,10 @@ int main(int argc, char **argv)
         }
       }
     #endif
-    
-    cudaThreadSynchronize();    // Force the runtime to wait until the GPU kernel is completed
+
+    // [MCGPULite] warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated
+    cudaDeviceSynchronize();
+    // cudaThreadSynchronize();    // Force the runtime to wait until the GPU kernel is completed
     getLastCudaError("\n\n !!Kernel execution failed while simulating particle tracks!! ");  // Check if kernel execution generated any error
 
     float real_GPU_speed = total_histories_current_kernel_float/(float(clock()-clock_kernel)/CLOCKS_PER_SEC);  // GPU speed for all the image simulation, not just the speed test.
@@ -1020,7 +1034,7 @@ int main(int argc, char **argv)
       
       if (MPI_SUCCESS != return_reduce)
       {
-        printf("\n\n !!ERROR!! Possible error reducing (MPI_SUM) the image results??? Returned value MPI_Reduce = %d\n\n\n", return_reduce);
+        printf("\n\n \033[31m!!!!ERROR!!\033[0m Possible error reducing (MPI_SUM) the image results??? Returned value MPI_Reduce = %d\n\n\n", return_reduce);
       }
               
       // -- Exchange the image simulated in thread 0 for the final image from all threads, in the master thread:
@@ -1052,7 +1066,9 @@ int main(int argc, char **argv)
       #ifdef USING_CUDA
         MASTER_THREAD printf("       ==> CUDA: Launching kernel to reset the device image to 0: number of blocks = %d, threads per block = 128\n", (int)(ceil(pixels_per_image/128.0f)+0.01f) );
         init_image_array_GPU<<<(int)(ceil(pixels_per_image/128.0f)+0.01f),128>>>(image_device, pixels_per_image);
-        cudaThreadSynchronize();
+        // [MCGPULite] warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated
+        cudaDeviceSynchronize();
+        // cudaThreadSynchronize();
         getLastCudaError("\n\n !!Kernel execution failed initializing the image array!! ");  // Check if kernel execution generated any error:
       #else        
         memset(image, 0, image_bytes);     //   Init memory space to 0.  (see http://www.lainoox.com/c-memset-examples/)
@@ -1068,14 +1084,14 @@ int main(int argc, char **argv)
   // *** Simulation finished! Report dose and timings and clean up.
 
 #ifdef USING_CUDA
-  if (dose_ROI_x_max > -1)
-  {   
-    MASTER_THREAD clock_kernel = clock();    
+  // if (dose_ROI_x_max > -1)
+  // {   
+  //   MASTER_THREAD clock_kernel = clock();    
 
-    checkCudaErrors( cudaMemcpy( voxels_Edep, voxels_Edep_device, voxels_Edep_bytes, cudaMemcpyDeviceToHost) );  // Copy final dose results to host (for every MPI threads)
+  //   checkCudaErrors( cudaMemcpy( voxels_Edep, voxels_Edep_device, voxels_Edep_bytes, cudaMemcpyDeviceToHost) );  // Copy final dose results to host (for every MPI threads)
 
-    MASTER_THREAD printf("       ==> CUDA: Time copying dose results from device to host: %.6f s\n", float(clock()-clock_kernel)/CLOCKS_PER_SEC);
-  }
+  //   MASTER_THREAD printf("       ==> CUDA: Time copying dose results from device to host: %.6f s\n", float(clock()-clock_kernel)/CLOCKS_PER_SEC);
+  // }
   
   if (flag_material_dose==1)
     checkCudaErrors( cudaMemcpy( materials_dose, materials_dose_device, MAX_MATERIALS*sizeof(ulonglong2), cudaMemcpyDeviceToHost) );  // Copy materials dose results to host, if tally enabled in input file.   !!tally_materials_dose!!
@@ -1089,9 +1105,11 @@ int main(int argc, char **argv)
   cudaFree(mfp_table_a_device);
   cudaFree(mfp_table_b_device);
   cudaFree(voxels_Edep_device);
-  checkCudaErrors( cudaThreadExit() );
+  // [MCGPULite] warning: ‘cudaError_t cudaThreadExit()’ is deprecated
+  checkCudaErrors( cudaDeviceReset() );
+  // checkCudaErrors( cudaThreadExit() );
 
-  MASTER_THREAD printf("       ==> CUDA: Time freeing the device memory and ending the GPU threads: %.6f s\n", float(clock()-clock_kernel)/CLOCKS_PER_SEC);
+  // MASTER_THREAD printf("       ==> CUDA: Time freeing the device memory and ending the GPU threads: %.6f s\n", float(clock()-clock_kernel)/CLOCKS_PER_SEC);
 
 #endif
 
@@ -1139,7 +1157,7 @@ int main(int argc, char **argv)
             // !!DeBuG!! I am sending a "ulonglong2" array as if it was composed of 2 "ulonglong" variables per element. There could be problems if the alignment in the structure includes some extra padding space (but it seems ok for a 64-bit computer).
       if (MPI_SUCCESS != return_reduce)
       {
-        printf("\n\n !!ERROR!! Possible error reducing (MPI_SUM) the dose results??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
+        printf("\n\n \033[31m!!!!ERROR!!\033[0m Possible error reducing (MPI_SUM) the dose results??? return_reduce = %d for thread %d\n\n\n", return_reduce, myID);
       }
 
       // -- Exchange the dose simulated in thread 0 for the final dose from all threads  
@@ -1153,7 +1171,8 @@ int main(int argc, char **argv)
 #endif
         
     // -- Report the total dose for all the projections:
-    MASTER_THREAD report_voxels_dose(file_dose_output, num_projections, &voxel_data, voxel_mat_dens, voxels_Edep, time_total_MC_simulation, total_histories, dose_ROI_x_min, dose_ROI_x_max, dose_ROI_y_min, dose_ROI_y_max, dose_ROI_z_min, dose_ROI_z_max, source_data);        
+    // [MCGPULite] Just dont report information of dose.
+    // MASTER_THREAD report_voxels_dose(file_dose_output, num_projections, &voxel_data, voxel_mat_dens, voxels_Edep, time_total_MC_simulation, total_histories, dose_ROI_x_min, dose_ROI_x_max, dose_ROI_y_min, dose_ROI_y_max, dose_ROI_z_min, dose_ROI_z_max, source_data);        
   }
   
   
@@ -1167,11 +1186,12 @@ int main(int argc, char **argv)
     ulonglong2 *materials_dose_total = materials_dose;  // Create a dummy pointer to the materials_dose data 
   #endif
     
-    MASTER_THREAD report_materials_dose(num_projections, total_histories, density_nominal, materials_dose_total, mass_materials);    // Report the material dose  !!tally_materials_dose!!
+    // [MCGPULite] Just dont report information of dose.
+    // MASTER_THREAD report_materials_dose(num_projections, total_histories, density_nominal, materials_dose_total, mass_materials);    // Report the material dose  !!tally_materials_dose!!
   }
   
-  MASTER_THREAD clock_end = clock();
-  MASTER_THREAD printf("\n\n       ==> CUDA: Time reporting the dose data: %.6f s\n", ((double)(clock_end-clock_start))/CLOCKS_PER_SEC);
+  // MASTER_THREAD clock_end = clock();
+  // MASTER_THREAD printf("\n\n       ==> CUDA: Time reporting the dose data: %.6f s\n", ((double)(clock_end-clock_start))/CLOCKS_PER_SEC);
   
 
   // *** Clean up RAM memory. If CUDA was used, the geometry and table data were already cleaned for MPI threads other than root after copying data to the GPU:
@@ -1194,7 +1214,7 @@ int main(int argc, char **argv)
     
   MASTER_THREAD 
   {
-    printf("\n\n\n    -- SIMULATION FINISHED!\n");
+    printf("\n\n\n\033[34m    -- SIMULATION FINISHED!\033[0m\n");
     
     time_total_MC_init_report = ((double)(clock()-clock_start_beginning))/CLOCKS_PER_SEC;
 
@@ -1549,98 +1569,98 @@ void read_input(int argc, char** argv, int myID, unsigned long long int* total_h
   }
   
   
-
-  // -- Init. [SECTION DOSE DEPOSITION v.2012-12-12] (MC-GPU v.1.3):
-  //    Electrons are not transported and therefore we are approximating that the dose is equal to the KERMA (energy released by the photons alone).
-  //    This approximation is acceptable when there is electronic equilibrium and when the range of the secondary electrons is shorter than the voxel size.
-  //    Usually the doses will be acceptable for photon energies below 1 MeV. The dose estimates may not be accurate at the interface of low density volumes.
-  do
-  {
-    new_line_ptr = fgets(new_line, 250, file_ptr);
-    if (new_line_ptr==NULL)
-    {
-      printf("\n\n   !!read_input ERROR!! Input file is not readable or does not contain the string \'SECTION DOSE DEPOSITION v.2012-12-12\'!!\n");
-      exit(-2);
-    }
+  // [MCGPULite] Dose parameters are no more needed.
+  // // -- Init. [SECTION DOSE DEPOSITION v.2012-12-12] (MC-GPU v.1.3):
+  // //    Electrons are not transported and therefore we are approximating that the dose is equal to the KERMA (energy released by the photons alone).
+  // //    This approximation is acceptable when there is electronic equilibrium and when the range of the secondary electrons is shorter than the voxel size.
+  // //    Usually the doses will be acceptable for photon energies below 1 MeV. The dose estimates may not be accurate at the interface of low density volumes.
+  // do
+  // {
+  //   new_line_ptr = fgets(new_line, 250, file_ptr);
+  //   if (new_line_ptr==NULL)
+  //   {
+  //     printf("\n\n   !!read_input ERROR!! Input file is not readable or does not contain the string \'SECTION DOSE DEPOSITION v.2012-12-12\'!!\n");
+  //     exit(-2);
+  //   }
     
-    if (strstr(new_line,"SECTION DOSE DEPOSITION v.2011-02-18")!=NULL)  // Detect previous version of input file
-    {
-      MASTER_THREAD printf("\n\n   !!read_input ERROR!! Please update the input file to the new version of MC-GPU (v1.3)!!\n\n    You simply have to change the input file text line:\n         [SECTION DOSE DEPOSITION v.2011-02-18]\n\n    for these two lines:\n         [SECTION DOSE DEPOSITION v.2012-12-12]\n         NO                              # TALLY MATERIAL DOSE? [YES/NO]\n\n");
-      exit(-2);
-    }
+  //   if (strstr(new_line,"SECTION DOSE DEPOSITION v.2011-02-18")!=NULL)  // Detect previous version of input file
+  //   {
+  //     MASTER_THREAD printf("\n\n   !!read_input ERROR!! Please update the input file to the new version of MC-GPU (v1.3)!!\n\n    You simply have to change the input file text line:\n         [SECTION DOSE DEPOSITION v.2011-02-18]\n\n    for these two lines:\n         [SECTION DOSE DEPOSITION v.2012-12-12]\n         NO                              # TALLY MATERIAL DOSE? [YES/NO]\n\n");
+  //     exit(-2);
+  //   }
     
-  }
-  while(strstr(new_line,"SECTION DOSE DEPOSITION v.2012-12-12")==NULL);  // Skip comments and empty lines until the section begins
+  // }
+  // while(strstr(new_line,"SECTION DOSE DEPOSITION v.2012-12-12")==NULL);  // Skip comments and empty lines until the section begins
     
 
-  new_line_ptr = fgets_trimmed(new_line, 250, file_ptr);   // TALLY MATERIAL DOSE? [YES/NO]  --> turn on/off the material dose tallied adding the Edep in each material, independently of the voxels.
-  if (0==strncmp("YE",new_line,2) || 0==strncmp("Ye",new_line,2) || 0==strncmp("ye",new_line,2))
-  {
-    *flag_material_dose = 1;
-    MASTER_THREAD printf("       Material dose deposition tally ENABLED.\n");
-  }
-  else if (0==strncmp("NO",new_line,2) || 0==strncmp("No",new_line,2) || 0==strncmp("no",new_line,2))
-  {
-    *flag_material_dose = 0;  // -- NO: disabling tally
-    MASTER_THREAD printf("       Material dose deposition tally DISABLED.\n");    
-  }
-  else
-  {
-    MASTER_THREAD printf("\n\n   !!read_input ERROR!! Answer YES or NO in the first two line of \'SECTION DOSE DEPOSITION\' to enable or disable the material dose and 3D voxel dose tallies.\n                        Input text: %s\n\n",new_line);
-    #ifdef USING_MPI
-      MPI_Finalize();
-    #endif
-    exit(-2);
-  }        
+  // new_line_ptr = fgets_trimmed(new_line, 250, file_ptr);   // TALLY MATERIAL DOSE? [YES/NO]  --> turn on/off the material dose tallied adding the Edep in each material, independently of the voxels.
+  // if (0==strncmp("YE",new_line,2) || 0==strncmp("Ye",new_line,2) || 0==strncmp("ye",new_line,2))
+  // {
+  //   *flag_material_dose = 1;
+  //   MASTER_THREAD printf("       Material dose deposition tally ENABLED.\n");
+  // }
+  // else if (0==strncmp("NO",new_line,2) || 0==strncmp("No",new_line,2) || 0==strncmp("no",new_line,2))
+  // {
+  //   *flag_material_dose = 0;  // -- NO: disabling tally
+  //   MASTER_THREAD printf("       Material dose deposition tally DISABLED.\n");    
+  // }
+  // else
+  // {
+  //   MASTER_THREAD printf("\n\n   !!read_input ERROR!! Answer YES or NO in the first two line of \'SECTION DOSE DEPOSITION\' to enable or disable the material dose and 3D voxel dose tallies.\n                        Input text: %s\n\n",new_line);
+  //   #ifdef USING_MPI
+  //     MPI_Finalize();
+  //   #endif
+  //   exit(-2);
+  // }        
 
-  new_line_ptr = fgets_trimmed(new_line, 250, file_ptr);   // TALLY 3D VOXEL DOSE? [YES/NO] 
+  // new_line_ptr = fgets_trimmed(new_line, 250, file_ptr);   // TALLY 3D VOXEL DOSE? [YES/NO] 
 
-  if (0==strncmp("YE",new_line,2) || 0==strncmp("Ye",new_line,2) || 0==strncmp("ye",new_line,2))
-  {
-    // -- YES: using the tally
-    new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); trim_name(new_line, file_dose_output);   // OUTPUT DOSE FILE NAME (no spaces)
-    new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_x_min, dose_ROI_x_max);   // # VOXELS TO TALLY DOSE: X-index min max (first voxel has index 1)
-    new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_y_min, dose_ROI_y_max);   // # VOXELS TO TALLY DOSE: Y-index min max
-    new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_z_min, dose_ROI_z_max);   // # VOXELS TO TALLY DOSE: Z-index min max
+  // if (0==strncmp("YE",new_line,2) || 0==strncmp("Ye",new_line,2) || 0==strncmp("ye",new_line,2))
+  // {
+  //   // -- YES: using the tally
+  //   new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); trim_name(new_line, file_dose_output);   // OUTPUT DOSE FILE NAME (no spaces)
+  //   new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_x_min, dose_ROI_x_max);   // # VOXELS TO TALLY DOSE: X-index min max (first voxel has index 1)
+  //   new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_y_min, dose_ROI_y_max);   // # VOXELS TO TALLY DOSE: Y-index min max
+  //   new_line_ptr = fgets_trimmed(new_line, 250, file_ptr); sscanf(new_line, "%hd %hd", dose_ROI_z_min, dose_ROI_z_max);   // # VOXELS TO TALLY DOSE: Z-index min max
 
-    *dose_ROI_x_min -= 1; *dose_ROI_x_max -= 1;  // -Re-scale input coordinates to have index=0 for the first voxel instead of 1.
-    *dose_ROI_y_min -= 1; *dose_ROI_y_max -= 1;
-    *dose_ROI_z_min -= 1; *dose_ROI_z_max -= 1;
+  //   *dose_ROI_x_min -= 1; *dose_ROI_x_max -= 1;  // -Re-scale input coordinates to have index=0 for the first voxel instead of 1.
+  //   *dose_ROI_y_min -= 1; *dose_ROI_y_max -= 1;
+  //   *dose_ROI_z_min -= 1; *dose_ROI_z_max -= 1;
 
-    MASTER_THREAD printf("       3D voxel dose deposition tally ENABLED.\n");
-    if ( ((*dose_ROI_x_min)>(*dose_ROI_x_max)) || ((*dose_ROI_y_min)>(*dose_ROI_y_max)) || ((*dose_ROI_z_min)>(*dose_ROI_z_max)) ||
-          (*dose_ROI_x_min)<0 || (*dose_ROI_y_min)<0 || (*dose_ROI_z_min)<0 )
-    {
-      MASTER_THREAD printf("\n\n   !!read_input ERROR!! The input region-of-interst in \'SECTION DOSE DEPOSITION\' is not valid: the minimum voxel index may not be zero or larger than the maximum index.\n");
-      MASTER_THREAD printf(  "                          Input data = X[%d,%d], Y[%d,%d], Z[%d,%d]\n\n", *dose_ROI_x_min+1, *dose_ROI_x_max+1, *dose_ROI_y_min+1, *dose_ROI_y_max+1, *dose_ROI_z_min+1, *dose_ROI_z_max+1);  // Show ROI with index=1 for the first voxel instead of 0.
-      #ifdef USING_MPI
-        MPI_Finalize();
-      #endif      
-      exit(-2);
-    }
-    if ( ((*dose_ROI_x_min)==(*dose_ROI_x_max)) && ((*dose_ROI_y_min)==(*dose_ROI_y_max)) && ((*dose_ROI_z_min)==(*dose_ROI_z_max)) ) 
-    {
-      MASTER_THREAD printf("\n\n   !!read_input!! According to the input region-of-interest in \'SECTION DOSE DEPOSITION\', only the dose in the voxel (%d,%d,%d) will be tallied.\n\n",*dose_ROI_x_min,*dose_ROI_y_min,*dose_ROI_z_min);
-    }
+  //   MASTER_THREAD printf("       3D voxel dose deposition tally ENABLED.\n");
+  //   if ( ((*dose_ROI_x_min)>(*dose_ROI_x_max)) || ((*dose_ROI_y_min)>(*dose_ROI_y_max)) || ((*dose_ROI_z_min)>(*dose_ROI_z_max)) ||
+  //         (*dose_ROI_x_min)<0 || (*dose_ROI_y_min)<0 || (*dose_ROI_z_min)<0 )
+  //   {
+  //     MASTER_THREAD printf("\n\n   !!read_input ERROR!! The input region-of-interst in \'SECTION DOSE DEPOSITION\' is not valid: the minimum voxel index may not be zero or larger than the maximum index.\n");
+  //     MASTER_THREAD printf(  "                          Input data = X[%d,%d], Y[%d,%d], Z[%d,%d]\n\n", *dose_ROI_x_min+1, *dose_ROI_x_max+1, *dose_ROI_y_min+1, *dose_ROI_y_max+1, *dose_ROI_z_min+1, *dose_ROI_z_max+1);  // Show ROI with index=1 for the first voxel instead of 0.
+  //     #ifdef USING_MPI
+  //       MPI_Finalize();
+  //     #endif      
+  //     exit(-2);
+  //   }
+  //   if ( ((*dose_ROI_x_min)==(*dose_ROI_x_max)) && ((*dose_ROI_y_min)==(*dose_ROI_y_max)) && ((*dose_ROI_z_min)==(*dose_ROI_z_max)) ) 
+  //   {
+  //     MASTER_THREAD printf("\n\n   !!read_input!! According to the input region-of-interest in \'SECTION DOSE DEPOSITION\', only the dose in the voxel (%d,%d,%d) will be tallied.\n\n",*dose_ROI_x_min,*dose_ROI_y_min,*dose_ROI_z_min);
+  //   }
     
-  }
-  else if (0==strncmp("NO",new_line,2) || 0==strncmp("No",new_line,2) || 0==strncmp("no",new_line,2))
-  {
-    // -- NO: disabling tally
-    MASTER_THREAD printf("       3D voxel dose deposition tally DISABLED.\n");
-    *dose_ROI_x_min = (short int) 32500; *dose_ROI_x_max = (short int) -32500;   // Set absurd values for the ROI to make sure we never get any dose tallied
-    *dose_ROI_y_min = (short int) 32500; *dose_ROI_y_max = (short int) -32500;   // (the maximum values for short int variables are +-32768)
-    *dose_ROI_z_min = (short int) 32500; *dose_ROI_z_max = (short int) -32500;
-  }
-  else
-  {
-      MASTER_THREAD printf("\n\n   !!read_input ERROR!! Answer YES or NO in the first two line of \'SECTION DOSE DEPOSITION\' to enable or disable the material dose and 3D voxel dose tallies.\n                        Input text: %s\n\n",new_line);
-      #ifdef USING_MPI
-        MPI_Finalize();
-      #endif
-      exit(-2);
-  }
-  MASTER_THREAD printf("\n");
+  // }
+  // else if (0==strncmp("NO",new_line,2) || 0==strncmp("No",new_line,2) || 0==strncmp("no",new_line,2))
+  // {
+  //   // -- NO: disabling tally
+  //   MASTER_THREAD printf("       3D voxel dose deposition tally DISABLED.\n");
+  //   *dose_ROI_x_min = (short int) 32500; *dose_ROI_x_max = (short int) -32500;   // Set absurd values for the ROI to make sure we never get any dose tallied
+  //   *dose_ROI_y_min = (short int) 32500; *dose_ROI_y_max = (short int) -32500;   // (the maximum values for short int variables are +-32768)
+  //   *dose_ROI_z_min = (short int) 32500; *dose_ROI_z_max = (short int) -32500;
+  // }
+  // else
+  // {
+  //     MASTER_THREAD printf("\n\n   !!read_input ERROR!! Answer YES or NO in the first two line of \'SECTION DOSE DEPOSITION\' to enable or disable the material dose and 3D voxel dose tallies.\n                        Input text: %s\n\n",new_line);
+  //     #ifdef USING_MPI
+  //       MPI_Finalize();
+  //     #endif
+  //     exit(-2);
+  // }
+  // MASTER_THREAD printf("\n");
 
 
 
@@ -1812,7 +1832,8 @@ void read_input(int argc, char** argv, int myID, unsigned long long int* total_h
     }
     else
     {
-      MASTER_THREAD printf("       Array for the deposited dose ROI (and uncertainty) correctly allocated (%d voxels, %f Mbytes)\n", num_voxels_ROI, (*voxels_Edep_bytes)/(1024.f*1024.f));
+      // [MCGPULite] No dose information.
+      // MASTER_THREAD printf("       Array for the deposited dose ROI (and uncertainty) correctly allocated (%d voxels, %f Mbytes)\n", num_voxels_ROI, (*voxels_Edep_bytes)/(1024.f*1024.f));
     }
   }
   else
@@ -1946,8 +1967,9 @@ void load_voxels(int myID, char* file_name_voxels, float* density_max, struct vo
   MASTER_THREAD 
   {
     printf("\n    -- Reading voxel file \'%s\':\n",file_name_voxels);
-    if (strstr(file_name_voxels,".gz")==NULL)
-      printf("         (note that MC-GPU can also read voxel and material files compressed with gzip)\n");     // !!zlib!!  
+    // [MCGPULite] Talk less.
+    // if (strstr(file_name_voxels,".gz")==NULL)
+    //   printf("         (note that MC-GPU can also read voxel and material files compressed with gzip)\n");     // !!zlib!!  
     fflush(stdout);
   }
   do
@@ -2309,7 +2331,7 @@ void load_material(int myID, char file_name_materials[MAX_MATERIALS][250], float
         
     if (input_rayleigh_values != NP_RAYLEIGH)
     {
-      printf("\n\n   !!ERROR!! The number of values for Rayleigh sampling is different than the allocated space: input=%d, NP_RAYLEIGH=%d. File=\'%s\'\n", input_rayleigh_values, NP_RAYLEIGH, file_name_materials[mat]);
+      printf("\n\n   \033[31m!!!!ERROR!!\033[0m The number of values for Rayleigh sampling is different than the allocated space: input=%d, NP_RAYLEIGH=%d. File=\'%s\'\n", input_rayleigh_values, NP_RAYLEIGH, file_name_materials[mat]);
       exit(-2);
     }
     new_line_ptr = gzgets(file_ptr, new_line, 250);    // Comment line:  #[SAMPLING DATA FROM COMMON/CGRA/: X, P, A, B, ITL, ITU]     //  !!zlib!!
@@ -2344,7 +2366,7 @@ void load_material(int myID, char file_name_materials[MAX_MATERIALS][250], float
     sscanf(new_line, "# %d", &input_num_shells);      // Read the NUMBER OF SHELLS
     if (input_num_shells>MAX_SHELLS)
     {
-      printf("\n\n   !!ERROR!! Too many shells for Compton interactions in file \'%s\': input=%d, MAX_SHELLS=%d\n", file_name_materials[mat], input_num_shells, MAX_SHELLS);
+      printf("\n\n   \033[31m!!!!ERROR!!\033[0m Too many shells for Compton interactions in file \'%s\': input=%d, MAX_SHELLS=%d\n", file_name_materials[mat], input_num_shells, MAX_SHELLS);
       exit(-2);
     }
     compton_table_ptr->noscco[mat] = input_num_shells;   // Store number of shells for this material in structure
@@ -2403,7 +2425,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
   checkCudaErrors(cudaGetDeviceCount(&deviceCount));
   if (0==deviceCount)
   {
-    printf("\n  !!ERROR!! No CUDA enabled GPU detected by thread #%d!!\n\n", myID);
+    printf("\n  \033[31m!!!!ERROR!!\033[0m No CUDA enabled GPU detected by thread #%d!!\n\n", myID);
     exit(-1);
   }  
   
@@ -2486,7 +2508,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
 
   if (*gpu_id>=deviceCount)
   {
-    printf("\n\n  !!WARNING!! The selected GPU number is too high, this device number does not exist!! GPU_id (starting at 0)=%d, deviceCount=%d\n", (*gpu_id), deviceCount); fflush(stdout);
+    printf("\n\n  \033[33m!!WARNING!!\033[0m The selected GPU number is too high, this device number does not exist!! GPU_id (starting at 0)=%d, deviceCount=%d\n", (*gpu_id), deviceCount); fflush(stdout);
     if (numprocs==1)
     {
       *gpu_id = gpuGetMaxGflopsDeviceId();
@@ -2501,7 +2523,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
   checkCudaErrors(cudaGetDeviceProperties(&deviceProp, *gpu_id));   // Re-load card properties in case we chaged gpu_id
   if (deviceProp.major>99 || deviceProp.minor>99)
   {
-    printf("\n\n\n  !!ERROR!! The selected GPU device does not support CUDA!! GPU_id=%d, deviceCount=%d, compute capability=%d.%d\n\n\n", (*gpu_id), deviceCount, deviceProp.major,deviceProp.minor);
+    printf("\n\n\n  \033[31m!!!!ERROR!!\033[0m The selected GPU device does not support CUDA!! GPU_id=%d, deviceCount=%d, compute capability=%d.%d\n\n\n", (*gpu_id), deviceCount, deviceProp.major,deviceProp.minor);
     exit(-1);
   }
   
@@ -2530,7 +2552,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
   // -- Reading the device properties:
   
 #ifdef USING_MPI   
-  printf("\n       ==> CUDA (MPI process #%d): %d CUDA enabled GPU detected! Using device #%d: \"%s\"\n", myID, deviceCount, (*gpu_id), deviceProp.name);    
+  // printf("\n       ==> CUDA (MPI process #%d): %d CUDA enabled GPU detected! Using device #%d: \"%s\"\n", myID, deviceCount, (*gpu_id), deviceProp.name);    
 #else  
   printf("\n       ==> CUDA: %d CUDA enabled GPU detected! Using device #%d: \"%s\"\n", deviceCount, (*gpu_id), deviceProp.name);    
 #endif
@@ -2544,7 +2566,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
 
   if (0!=deviceProp.kernelExecTimeoutEnabled)
   {
-    printf("\n\n\n   !!WARNING!! The selected GPU is connected to a display and therefore CUDA driver will limit the kernel run time to 5 seconds and the simulation will likely fail!!\n");
+    printf("\n\n\n   \033[33m!!WARNING!!\033[0m The selected GPU is connected to a display and therefore CUDA driver will limit the kernel run time to 5 seconds and the simulation will likely fail!!\n");
     printf( "              You can fix this by executing the simulation in a different GPU (select number in the input file) or by turning off the window manager and using the text-only Linux shell.\n\n\n");
     // exit(-1);
   }    
@@ -2629,7 +2651,9 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
   MASTER_THREAD printf("       ==> CUDA: Launching kernel to initialize the device image to 0: number of blocks = %d, threads per block = 128\n", (int)(ceil(pixels_per_image/128.0f)+0.01f) );
 
   init_image_array_GPU<<<(int)(ceil(pixels_per_image/128.0f)+0.01f),128>>>(*image_device, pixels_per_image);
-    cudaThreadSynchronize();      // Force the runtime to wait until all device tasks have completed
+    // [MCGPULite] warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated
+    cudaDeviceSynchronize();
+    // cudaThreadSynchronize();      // Force the runtime to wait until all device tasks have completed
     getLastCudaError("\n\n !!Kernel execution failed initializing the image array!! ");  // Check if kernel execution generated any error:
 
 
@@ -2637,7 +2661,7 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
   if (*dose_ROI_x_max > -1)
   {      
     
-    MASTER_THREAD printf("       ==> CUDA: Initialize the device dose deposition to 0 using cudaMemcpy.\n");
+    // MASTER_THREAD printf("       ==> CUDA: Initialize the device dose deposition to 0 using cudaMemcpy.\n");
     checkCudaErrors(cudaMemcpy(*voxels_Edep_device, voxels_Edep, voxels_Edep_bytes, cudaMemcpyHostToDevice) );
    
 /*  // -- OPTIONAL CODE: Launch kernel to initialize the device dose deposition to 0 (MAY FAIL IF DOSE MATRIX IS TOO BIG!)    !!DeBuG!!
@@ -2845,31 +2869,41 @@ int report_image(char* file_name_output, struct detector_struct* detector_data, 
     exit(-3);
   }
   
+  // [MCGPULite] Total.
   for(i=0; i<pixels_per_image; i++)
   {
     energy_float = (float)( NORM * (double)(image[i] + image[i + pixels_per_image] + image[i + 2*pixels_per_image] + image[i + 3*pixels_per_image]) );  // Total image (scatter + primary)
     fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);   // Write pixel data in a binary file that can be easyly open in imageJ. !!BINARY!!
   }
+  // [MCGPULite] Primary.
   for(i=0; i<pixels_per_image; i++)
   {
     energy_float = (float)( NORM * (double)(image[i]) );  // Non-scattered image
     fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
   }
+  // [MCGPULite] It now outputs summed scatter image.
   for(i=0; i<pixels_per_image; i++)
   {
-    energy_float = (float)( NORM * (double)(image[i + pixels_per_image]) );  // Compton image
+    energy_float = (float)( NORM * (double)(image[i + pixels_per_image] + image[i + 2*pixels_per_image] + image[i + 3*pixels_per_image]) );  // Scatter image
     fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
   }
-  for(i=0; i<pixels_per_image; i++)
-  {
-    energy_float = (float)( NORM * (double)(image[i + 2*pixels_per_image]) );  // Rayleigh image
-    fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
-  }
-  for(i=0; i<pixels_per_image; i++)
-  {
-    energy_float = (float)( NORM * (double)(image[i + 3*pixels_per_image]) );  // Multiple-scatter image
-    fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
-  }       
+  
+  // [MCGPULite] Indiviual scatter images are no longer output.
+  // for(i=0; i<pixels_per_image; i++)
+  // {
+  //   energy_float = (float)( NORM * (double)(image[i + pixels_per_image]) );  // Compton image
+  //   fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
+  // }
+  // for(i=0; i<pixels_per_image; i++)
+  // {
+  //   energy_float = (float)( NORM * (double)(image[i + 2*pixels_per_image]) );  // Rayleigh image
+  //   fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
+  // }
+  // for(i=0; i<pixels_per_image; i++)
+  // {
+  //   energy_float = (float)( NORM * (double)(image[i + 3*pixels_per_image]) );  // Multiple-scatter image
+  //   fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
+  // }       
   
   fclose(file_binary_ptr);    
   
@@ -2877,9 +2911,6 @@ int report_image(char* file_name_output, struct detector_struct* detector_data, 
   return 0;     // Report could return not 0 to continue the simulation...
 }
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //! Report the total tallied 3D voxel dose deposition for all projections.
@@ -3626,7 +3657,7 @@ void IRND0(float *W, float *F, short int *K, int N)
    {   
       if(W[I] < 0.0f) 
       {
-         printf("\n\n !!ERROR!! IRND0: Walker sampling initialization. Negative point probability? W(%d)=%f\n\n", I, W[I]);
+         printf("\n\n \033[31m!!!!ERROR!!\033[0m IRND0: Walker sampling initialization. Negative point probability? W(%d)=%f\n\n", I, W[I]);
          exit(-1);
       }
       WS = WS + W[I];
