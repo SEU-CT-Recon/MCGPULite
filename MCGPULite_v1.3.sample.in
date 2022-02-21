@@ -1,0 +1,36 @@
+# >>>> INPUT FILE FOR MCGPULite v1.3 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+#[SECTION SIMULATION CONFIG v.2009-05-12]
+1.0e10                           # TOTAL NUMBER OF HISTORIES, OR SIMULATION TIME IN SECONDS IF VALUE < 100000
+20220216                      # RANDOM SEED (ranecu PRNG)
+2                               # GPU NUMBER TO USE WHEN MPI IS NOT USED, OR TO BE AVOIDED IN MPI RUNS
+512                             # GPU THREADS PER CUDA BLOCK (multiple of 32)
+1000                             # SIMULATED HISTORIES PER GPU THREAD
+
+#[SECTION SOURCE v.2011-07-12]
+./80kVp_bowtie.spec    # X-RAY ENERGY SPECTRUM FILE
+4.0   -20.0   4.0              # SOURCE POSITION: X Y Z [cm]
+0.0   1.0    0.0                # SOURCE DIRECTION COSINES: U V W
+-1 -1                           # POLAR AND AZIMUTHAL APERTURES FOR THE FAN BEAM [degrees] (input negative to cover the whole detector)
+
+#[SECTION IMAGE DETECTOR v.2009-12-02]
+./out/somewhat                # OUTPUT IMAGE FILE NAME
+512    512                      # NUMBER OF PIXELS IN THE IMAGE: Nx Nz
+25     25                     # IMAGE SIZE (width, height): Dx Dz [cm]
+50.0                           # SOURCE-TO-DETECTOR DISTANCE (detector set in front of the source, perpendicular to the initial direction)
+
+#[SECTION CT SCAN TRAJECTORY v.2011-10-25]
+2                               # NUMBER OF PROJECTIONS (beam must be perpendicular to Z axis, set to 1 for a single projection)
+1.0                            # ANGLE BETWEEN PROJECTIONS [degrees] (360/num_projections for full CT)
+ 0.0 3600.0                     # ANGLES OF INTEREST (projections outside the input interval will be skipped)
+20.0                            # SOURCE-TO-ROTATION AXIS DISTANCE (rotation radius, axis parallel to Z)
+ 0.0                            # VERTICAL TRANSLATION BETWEEN PROJECTIONS (HELICAL SCAN)
+
+#[SECTION VOXELIZED GEOMETRY FILE v.2009-11-30]
+/home/zhuoxu/workspace/scatter-mc/WaterPlate3cm.vox          # VOXEL GEOMETRY FILE (penEasy 2008 format; .gz accepted)
+
+#[SECTION MATERIAL FILE LIST v.2009-11-30]
+/home/zhuoxu/app/MCGPULite/material/air__5-120keV.mcgpu.gz                     #  1st MATERIAL FILE (.gz accepted)
+/home/zhuoxu/app/MCGPULite/material/water__5-120keV.mcgpu.gz                   #  2
+
+# >>>> END INPUT FILE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

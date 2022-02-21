@@ -1,7 +1,7 @@
 # Makefile for MCGPULite @ github.com/z0gSh1u/MCGPULite
 .SUFFIXES: .cu .o
 
-PROG = MC-GPU_v1.3.x
+PROG = MCGPULite_v1.3.x
 
 SHELL = /bin/sh
 RM = /bin/rm -vf
@@ -25,7 +25,7 @@ CFLAGS = -O3 -use_fast_math -m64 -DUSING_CUDA -DUSING_MPI \
 	-L$(OPENMPI_LIB) -lmpi \
 	--ptxas-options=-v
 
-SRCS = MC-GPU_v1.3.cu
+SRCS = MCGPULite_v1.3.cu
 
 default: $(PROG)
 $(PROG):
