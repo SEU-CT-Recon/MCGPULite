@@ -2406,8 +2406,10 @@ int report_image(char* file_name_output, struct detector_struct* detector_data, 
   if (time_elapsed>0.000001)
     printf("              Speed [x-rays/s]:    %.2f\n\n", ((double)total_histories)/time_elapsed);
 
-  strcat(file_name_output,".txt");                       // !!ASCII!! 
-  FILE* file_ptr = fopen(file_name_output, "w");
+  char file_name_buf[250];
+  strncpy(file_name_buf, file_name_output, 250);
+  strcat(file_name_buf,".txt");                       // !!ASCII!! 
+  FILE* file_ptr = fopen(file_name_buf, "w");
   
   if (file_ptr==NULL)
   {
