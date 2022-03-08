@@ -2143,17 +2143,17 @@ void init_CUDA_device( int* gpu_id, int myID, int numprocs,
     }
     
   
-  
-    //!!DeBuG!! MC-GPU_v1.4!! Skip GPUs connected to a monitor, if more GPUs available:
-    checkCudaErrors(cudaGetDeviceProperties(&deviceProp, *gpu_id));    
-    if (0!=deviceProp.kernelExecTimeoutEnabled)                                 //!!DeBuG!! 
-    {
-      if((*gpu_id)<(deviceCount-1))                                             //!!DeBuG!! 
-      {      
-        printf("\n       ==> CUDA: GPU #%d is connected to a display and the CUDA driver would limit the kernel run time. Skipping this GPU!!\n", *gpu_id); //!!DeBuG!!
-        *gpu_id = (*gpu_id)+1;                                                  //!!DeBuG!!
-      }
-    }
+    // [Would crash if all GPUs are detected connected to one monitor.]
+    // //!!DeBuG!! MC-GPU_v1.4!! Skip GPUs connected to a monitor, if more GPUs available:
+    // checkCudaErrors(cudaGetDeviceProperties(&deviceProp, *gpu_id));    
+    // if (0!=deviceProp.kernelExecTimeoutEnabled)                                 //!!DeBuG!! 
+    // {
+    //   if((*gpu_id)<(deviceCount-1))                                             //!!DeBuG!! 
+    //   {      
+    //     printf("\n       ==> CUDA: GPU #%d is connected to a display and the CUDA driver would limit the kernel run time. Skipping this GPU!!\n", *gpu_id); //!!DeBuG!!
+    //     *gpu_id = (*gpu_id)+1;                                                  //!!DeBuG!!
+    //   }
+    // }
   
        
     // Send the processor and GPU id to the following thread, unless we are the last thread:
@@ -2531,7 +2531,7 @@ int report_image(char* file_name_output, struct detector_struct* detector_data, 
     fwrite(&energy_float, sizeof(float), 1, file_binary_ptr);
   }
   
-  // [MCGPULite] Indiviual scatter images are no longer output.
+  // [MCGPULite] Individual scatter images are no longer output.
   // for(i=0; i<pixels_per_image; i++)
   // {
   //   energy_float = (float)( NORM * (double)(image[i + pixels_per_image]) );  // Compton image
