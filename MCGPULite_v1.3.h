@@ -59,7 +59,7 @@
 #define  MAX_NUM_PROJECTIONS  720
 
 //! Constants values for the Compton and Rayleigh models:
-#define  MAX_MATERIALS      15
+#define  MAX_MATERIALS      20
 #define  MAX_SHELLS         30
 #define  NP_RAYLEIGH       128
 #define  MAX_ENERGYBINS_RAYLEIGH  25005
